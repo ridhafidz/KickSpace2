@@ -23,7 +23,7 @@ class VenueController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'image' => 'nullable|image|max:2048',
-            'price_per_hour' => 'required|numeric',
+            'price_per_hour' => 'required|numeric|9999',
         ]);
 
         $data = $request->all();
@@ -47,7 +47,7 @@ class VenueController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'image' => 'nullable|image|max:2048',
-            'price_per_hour' => 'required|numeric',
+            'price_per_hour' => 'required|numeric|9999',
         ]);
 
         $data = $request->all();

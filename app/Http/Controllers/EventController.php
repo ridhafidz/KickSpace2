@@ -20,14 +20,25 @@ class EventController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'registration_fee' => 'required|numeric',
-        ]);
+        try {
+            $request->validate([
+                'name' => 'required|string|max:255',
+                'registration_fee' => 'required|numeric|max:99999', // max angka, bukan digit
+            ]);
 
-        Event::create($request->all());
+            Event::create($request->all());
 
-        return redirect()->route('events.index')->with('success', 'Event created successfully.');
+            return redirect()->route('events.index')->with('success', 'Event created successfully.');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return redirect()->back()
+                ->withErrors($e->validator)
+                ->withInput()
+                ->with('error', 'Validasi gagal. Silakan periksa kembali input Anda.');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Terjadi kesalahan saat menyimpan data. Silakan coba lagi.');
+        }
     }
 
     public function edit(Event $event)
@@ -37,14 +48,25 @@ class EventController extends Controller
 
     public function update(Request $request, Event $event)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'registration_fee' => 'required|numeric',
-        ]);
+        try {
+            $request->validate([
+                'name' => 'required|string|max:255',
+                'registration_fee' => 'required|numeric|max:99999', // perhatikan bahwa ini membatasi nilai, bukan jumlah digit
+            ]);
 
-        $event->update($request->all());
+            $event->update($request->all());
 
-        return redirect()->route('events.index')->with('success', 'Event updated successfully.');
+            return redirect()->route('events.index')->with('success', 'Event updated successfully.');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return redirect()->back()
+                ->withErrors($e->validator)
+                ->withInput()
+                ->with('error', 'Validasi gagal. Silakan periksa kembali input Anda.');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Terjadi kesalahan saat memperbarui data. Silakan coba lagi.');
+        }
     }
 
     public function destroy(Event $event)
