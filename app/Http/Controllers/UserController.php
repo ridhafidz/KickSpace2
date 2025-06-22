@@ -6,12 +6,13 @@ use App\Models\User;
 use App\Models\Role;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
     public function index()
     {
-
         $users = User::with('role')->get();
         return view('users.index', compact('users'));
     }
@@ -25,18 +26,28 @@ class UserController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required',
-            'email' => 'required|email|unique:users',
-            'password' => 'required|min:6',
-            'role_id' => 'nullable|exists:roles,id'
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|string|min:6|confirmed',
+            'role_id' => 'nullable|exists:roles,id',
+            'profile_picture' => 'nullable|image|min:5|max:5120', // min 5KB, max 5MB
+        ], [
+            'name.required' => 'Nama pengguna tidak boleh kosong.',
+            'email.unique' => 'Email ini sudah terdaftar.',
+            'password.min' => 'Password minimal harus 6 karakter.',
+            'password.confirmed' => 'Konfirmasi password tidak cocok.',
+            'profile_picture.min' => 'Ukuran gambar profil minimal adalah 5 KB.',
+            'profile_picture.max' => 'Ukuran gambar profil maksimal adalah 5 MB.',
         ]);
 
-        User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'role_id' => $request->role_id,
-        ]);
+        $data = $request->only(['name', 'email', 'role_id']);
+        $data['password'] = Hash::make($request->password);
+
+        if ($request->hasFile('profile_picture')) {
+            $data['profile_picture'] = $request->file('profile_picture')->store('profiles', 'public');
+        }
+
+        User::create($data);
 
         return redirect()->route('users.index')->with('success', 'User created successfully.');
     }
@@ -50,22 +61,42 @@ class UserController extends Controller
     public function update(Request $request, User $user)
     {
         $request->validate([
-            'name' => 'required',
-            'email' => 'required|email|unique:users,email,' . $user->id,
-            'role_id' => 'nullable|exists:roles,id'
+            'name' => 'required|string|max:255',
+            'email' => ['required', 'email', Rule::unique('users')->ignore($user->id)],
+            'password' => 'nullable|string|min:6|confirmed',
+            'role_id' => 'nullable|exists:roles,id',
+            'profile_picture' => 'nullable|image|min:5|max:5120', // min 5KB, max 5MB
+        ], [
+            'password.min' => 'Password baru minimal harus 6 karakter.',
+            'password.confirmed' => 'Konfirmasi password tidak cocok.',
+            'profile_picture.min' => 'Ukuran gambar profil minimal adalah 5 KB.',
+            'profile_picture.max' => 'Ukuran gambar profil maksimal adalah 5 MB.',
         ]);
 
-        $user->update([
-            'name' => $request->name,
-            'email' => $request->email,
-            'role_id' => $request->role_id,
-        ]);
+        $data = $request->only(['name', 'email', 'role_id']);
+
+        if ($request->filled('password')) {
+            $data['password'] = Hash::make($request->password);
+        }
+
+        if ($request->hasFile('profile_picture')) {
+            if ($user->profile_picture) {
+                Storage::disk('public')->delete($user->profile_picture);
+            }
+            $data['profile_picture'] = $request->file('profile_picture')->store('profiles', 'public');
+        }
+
+        $user->update($data);
 
         return redirect()->route('users.index')->with('success', 'User updated successfully.');
     }
 
     public function destroy(User $user)
     {
+        if ($user->profile_picture) {
+            Storage::disk('public')->delete($user->profile_picture);
+        }
+
         $user->delete();
         return redirect()->route('users.index')->with('success', 'User deleted successfully.');
     }

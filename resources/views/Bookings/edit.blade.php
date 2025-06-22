@@ -42,6 +42,7 @@
         </div>
 
         <button type="submit" class="btn btn-success">Update</button>
+        <a href="{{ route('bookings.index') }}" class="btn btn-secondary">cancel</a>
     </form>
 </div>
 @endsection

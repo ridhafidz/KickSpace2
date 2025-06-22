@@ -16,6 +16,7 @@ return new class extends Migration
         $table->string('name');
         $table->text('deskripsi')->nullable(); // ubah dari description
         $table->string('link_menu')->nullable(); // kolom baru untuk link
+        $table->string('icon_class')->nullable(); // kolom baru untuk class icon
         $table->timestamps();
     });
 }

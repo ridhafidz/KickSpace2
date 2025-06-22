@@ -20,13 +20,21 @@ class MenuController extends Controller
 
     public function store(Request $request)
     {
+        // GABUNGAN: Validasi Anda + validasi untuk icon_class
         $request->validate([
             'name' => 'required|string|max:255',
             'deskripsi' => 'nullable|string|max:255',
             'link_menu' => 'nullable|string|max:255|unique:menus,link_menu',
+            'icon_class' => 'nullable|string|max:255', // Tambahan
         ]);
 
-        Menu::create($request->all());
+        // Menggunakan metode create eksplisit agar lebih aman dan jelas
+        Menu::create([
+            'name' => $request->name,
+            'deskripsi' => $request->deskripsi,
+            'link_menu' => $request->link_menu,
+            'icon_class' => $request->icon_class, // Tambahan
+        ]);
 
         return redirect()->route('menus.index')->with('success', 'Menu created successfully.');
     }
@@ -38,13 +46,21 @@ class MenuController extends Controller
 
     public function update(Request $request, Menu $menu)
     {
+        // GABUNGAN: Validasi Anda + validasi untuk icon_class
         $request->validate([
             'name' => 'required|string|max:255',
             'deskripsi' => 'nullable|string|max:255',
             'link_menu' => 'nullable|string|max:255|unique:menus,link_menu,' . $menu->id,
+            'icon_class' => 'nullable|string|max:255', // Tambahan
         ]);
 
-        $menu->update($request->all());
+        // Menggunakan metode update eksplisit
+        $menu->update([
+            'name' => $request->name,
+            'deskripsi' => $request->deskripsi,
+            'link_menu' => $request->link_menu,
+            'icon_class' => $request->icon_class, // Tambahan
+        ]);
 
         return redirect()->route('menus.index')->with('success', 'Menu updated successfully.');
     }

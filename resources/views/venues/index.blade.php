@@ -24,7 +24,9 @@
                     <td>{{ $venue->name }}</td>
                     <td>
                         @if($venue->image)
-                            <img src="{{ asset('storage/' . $venue->image) }}" alt="Image" width="100">
+                            {{-- Ganti tag img dengan yang ini --}}
+                            <img src="{{ asset('storage/' . $venue->image) }}" alt="{{ $venue->name }}"
+                                 style="width: 150px; height: 100px; object-fit: cover; border-radius: 8px;">
                         @endif
                     </td>
                     <td>Rp{{ number_format($venue->price_per_hour, 2) }}</td>

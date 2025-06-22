@@ -17,5 +17,16 @@
             <textarea name="description" class="form-control"></textarea>
         </div>
         <button type="submit" class="btn btn-primary">Save</button>
+        <a href="{{ route('roles.index') }}" class="btn btn-secondary">Cancel</a>
+
+        {{-- Display validation errors if any --}}
+        @if ($errors->any())
+            <div class="alert alert-danger mt-3">
+                <ul>
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
     </form>
 @endsection

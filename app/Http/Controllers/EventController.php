@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Event;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class EventController extends Controller
 {
@@ -21,19 +22,25 @@ class EventController extends Controller
     public function store(Request $request)
     {
         try {
-            $request->validate([
+            // --- VALIDASI DIPERBARUI DENGAN PESAN KUSTOM ---
+            $validatedData = $request->validate([
                 'name' => 'required|string|max:255',
-                'registration_fee' => 'required|numeric|max:99999', // max angka, bukan digit
+                'registration_fee' => 'required|numeric|min:50000|max:250000',
+            ], [
+                'registration_fee.min' => 'Biaya registrasi minimal adalah Rp 50.000.',
+                'registration_fee.max' => 'Biaya registrasi maksimal adalah Rp 250.000.',
+                'name.required' => 'Nama event tidak boleh kosong.',
             ]);
 
-            Event::create($request->all());
+            Event::create($validatedData);
 
             return redirect()->route('events.index')->with('success', 'Event created successfully.');
-        } catch (\Illuminate\Validation\ValidationException $e) {
+
+        } catch (ValidationException $e) {
+            // Cukup kembalikan dengan error dan input, view akan menanganinya
             return redirect()->back()
                 ->withErrors($e->validator)
-                ->withInput()
-                ->with('error', 'Validasi gagal. Silakan periksa kembali input Anda.');
+                ->withInput();
         } catch (\Exception $e) {
             return redirect()->back()
                 ->withInput()
@@ -49,19 +56,24 @@ class EventController extends Controller
     public function update(Request $request, Event $event)
     {
         try {
-            $request->validate([
+            // --- VALIDASI DIPERBARUI DENGAN PESAN KUSTOM ---
+            $validatedData = $request->validate([
                 'name' => 'required|string|max:255',
-                'registration_fee' => 'required|numeric|max:99999', // perhatikan bahwa ini membatasi nilai, bukan jumlah digit
+                'registration_fee' => 'required|numeric|min:50000|max:250000',
+            ], [
+                'registration_fee.min' => 'Biaya registrasi minimal adalah Rp 50.000.',
+                'registration_fee.max' => 'Biaya registrasi maksimal adalah Rp 250.000.',
+                'name.required' => 'Nama event tidak boleh kosong.',
             ]);
 
-            $event->update($request->all());
+            $event->update($validatedData);
 
             return redirect()->route('events.index')->with('success', 'Event updated successfully.');
-        } catch (\Illuminate\Validation\ValidationException $e) {
+
+        } catch (ValidationException $e) {
             return redirect()->back()
                 ->withErrors($e->validator)
-                ->withInput()
-                ->with('error', 'Validasi gagal. Silakan periksa kembali input Anda.');
+                ->withInput();
         } catch (\Exception $e) {
             return redirect()->back()
                 ->withInput()

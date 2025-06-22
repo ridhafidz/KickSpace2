@@ -15,6 +15,7 @@ class Menu extends Model
         'name',
         'deskripsi',
         'link_menu',
+        'icon_class',
     ];
 
     public function roles()
